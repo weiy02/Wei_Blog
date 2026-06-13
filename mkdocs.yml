@@ -1,0 +1,85 @@
+# 项目信息
+site_name: NovaWy
+site_description: 个人技术博客
+site_author:
+site_url: https://example.com
+strict: false
+
+# 版权
+copyright: 'Copyright &copy; 2026'
+
+# 导航
+nav:
+  - 首页: index.md
+  - 关于: about.md
+  - 样式演示: demo.md
+  - AtCoder:
+    - Beginner Contest:
+      - abc458: AtCoder/AtCoder_Beginner_Contest/abc458.md
+      - abc461: AtCoder/AtCoder_Beginner_Contest/abc461.md
+  - LeetCode:
+    - 第11题: LeetCode/11.md
+  - 课内课程:
+    - 数据库: Classes/数据库.md
+# 主题
+theme:
+  name: material
+  language: 'zh'
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: white
+      accent: red
+      toggle:
+        icon: material/weather-sunny
+        name: 切换暗色模式
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/weather-night
+        name: 切换亮色模式
+  favicon: 'favicon.ico'
+  icon:
+    logo: 'material/school'
+  features:
+    - navigation.tabs
+    - navigation.instant
+    - content.code.copy
+  font:
+    text: 'Fira Sans'
+    code: 'Fira Mono'
+
+# 插件
+plugins:
+  - search:
+      lang: zh
+
+# 扩展
+markdown_extensions:
+  - admonition
+  - def_list
+  - footnotes
+  - meta
+  - toc:
+      permalink: ""
+  - pymdownx.caret
+  - pymdownx.critic
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:pymdownx.emoji.to_svg
+  - pymdownx.highlight:
+      linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink
+  - pymdownx.mark
+  - pymdownx.progressbar
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+  - pymdownx.tabbed:
+      alternate_style: true

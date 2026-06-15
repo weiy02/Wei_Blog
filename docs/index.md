@@ -232,3 +232,43 @@
       你的博客 https://weiy02.github.io/Wei_Blog/
 
   总结就是一句话：你只需要 git push，剩下的 Actions 自动搞定。
+
+
+ 方式一：直接用 HTML <img> 标签（推荐，无需额外配置）
+  
+  <img src="../images/Classes/数据库/群公告.jpg" alt="群公告" width="400" />
+
+  直接改 width 或 height 数值即可，在 MkDocs 中完全兼容。
+
+  ---
+  方式二：启用 attr_list 扩展，用 Markdown 属性语法
+  
+  在 mkdocs.yml 的 markdown_extensions 里加上 attr_list（目前没有启用）：
+
+  markdown_extensions:
+    - attr_list
+
+  然后就可以这样写：
+
+  ![群公告](../images/Classes/数据库/群公告.jpg){: width="400"}
+
+  ⚠️ 但需要你手动去 mkdocs.yml 加一行配置。
+
+  ---
+  方式三：Material 主题内置的对齐类
+
+  Material 主题支持部分对齐属性（但不支持直接调宽高）：
+  → 需要 attr_list 扩展也已启用
+
+  ![群公告](../images/Classes/数据库/群公告.jpg){: align=left }
+
+  ---
+  建议
+
+  最简单且不需要改配置 → 直接用 方式一（HTML <img>），把文件里的：
+
+  ![群公告](../images/Classes/数据库/群公告.jpg "复习重点")
+
+  改成类似：
+
+  <img src="../images/Classes/数据库/群公告.jpg" alt="群公告" width="500" />

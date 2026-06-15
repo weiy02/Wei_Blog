@@ -1161,6 +1161,28 @@
           ▼
       你的博客 <a href="https://weiy02.github.io/Wei_Blog/">https://weiy02.github.io/Wei_Blog/</a></p>
 <p>总结就是一句话：你只需要 git push，剩下的 Actions 自动搞定。</p>
+<p>方式一：直接用 HTML <img> 标签（推荐，无需额外配置）</p>
+<p><img src="../images/Classes/数据库/群公告.jpg" alt="群公告" width="400" /></p>
+<p>直接改 width 或 height 数值即可，在 MkDocs 中完全兼容。</p>
+<hr />
+<p>方式二：启用 attr_list 扩展，用 Markdown 属性语法</p>
+<p>在 mkdocs.yml 的 markdown_extensions 里加上 attr_list（目前没有启用）：</p>
+<p>markdown_extensions:
+    - attr_list</p>
+<p>然后就可以这样写：</p>
+<p><img alt="群公告" src="../images/Classes/数据库/群公告.jpg" />{: width="400"}</p>
+<p>⚠️ 但需要你手动去 mkdocs.yml 加一行配置。</p>
+<hr />
+<p>方式三：Material 主题内置的对齐类</p>
+<p>Material 主题支持部分对齐属性（但不支持直接调宽高）：
+  → 需要 attr_list 扩展也已启用</p>
+<p><img alt="群公告" src="../images/Classes/数据库/群公告.jpg" />{: align=left }</p>
+<hr />
+<p>建议</p>
+<p>最简单且不需要改配置 → 直接用 方式一（HTML <img>），把文件里的：</p>
+<p><img alt="群公告" src="../images/Classes/数据库/群公告.jpg" title="复习重点" /></p>
+<p>改成类似：</p>
+<p><img src="../images/Classes/数据库/群公告.jpg" alt="群公告" width="500" /></p>
 
 
 

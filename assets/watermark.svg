@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="595" height="842" viewBox="0 0 595 842">
+  <style>
+    .wm-text {
+      fill: #999999;
+      font-family: "Fira Sans", "Helvetica Neue", Arial, sans-serif;
+      font-size: 48px;
+      font-weight: bold;
+      opacity: 0.11;
+    }
+    .wm-sub {
+      fill: #aaaaaa;
+      font-family: "Fira Sans", "Helvetica Neue", Arial, sans-serif;
+      font-size: 18px;
+      opacity: 0.08;
+    }
+  </style>
+  <!-- 重复水印块，覆盖整页 -->
+  <g transform="rotate(-35, 297, 421)">
+    <!-- 第1行 -->
+    <text x="50" y="200" class="wm-text">NovaWy</text>
+    <text x="50" y="225" class="wm-sub">个人技术博客</text>
+
+    <text x="250" y="500" class="wm-text">NovaWy</text>
+    <text x="250" y="525" class="wm-sub">个人技术博客</text>
+
+    <text x="450" y="800" class="wm-text">NovaWy</text>
+    <text x="450" y="825" class="wm-sub">个人技术博客</text>
+
+    <!-- 补位 -->
+    <text x="-50" y="650" class="wm-text">NovaWy</text>
+    <text x="-50" y="675" class="wm-sub">个人技术博客</text>
+
+    <text x="350" y="50" class="wm-text">NovaWy</text>
+    <text x="350" y="75" class="wm-sub">个人技术博客</text>
+
+    <text x="100" y="950" class="wm-text">NovaWy</text>
+    <text x="100" y="975" class="wm-sub">个人技术博客</text>
+  </g>
+</svg>

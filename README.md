@@ -26,3 +26,26 @@ docs/
   images/       # 图片资源
 mkdocs.yml      # 站点配置文件
 ```
+
+## 导出文章为 PDF
+
+使用 Playwright (Chromium) 将文章渲染为带水印、页眉页码的 PDF，效果与网页一致。
+
+```bash
+# 安装 PDF 生成依赖（首次使用）
+pip install playwright PyPDF2
+python -m playwright install chromium
+
+# 先构建站点
+mkdocs build
+
+# 导出全部文章（每篇一个 PDF）
+python scripts/generate-pdfs.py
+
+# 导出指定文章
+python scripts/generate-pdfs.py LeetCode/11
+python scripts/generate-pdfs.py LeetCode/11.md
+python scripts/generate-pdfs.py Classes/数据库
+```
+
+PDF 输出到 `pdf-output/` 目录，按文章路径组织。

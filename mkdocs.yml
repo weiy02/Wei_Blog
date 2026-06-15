@@ -19,8 +19,10 @@ nav:
       - abc461: AtCoder/AtCoder_Beginner_Contest/abc461.md
   - LeetCode:
     - 第11题: LeetCode/11.md
+    - 第46题: LeetCode/46.md
   - 课内课程:
     - 数据库: Classes/数据库.md
+    - Java: Classes/Java.md
 # 主题
 theme:
   name: material
@@ -55,7 +57,6 @@ theme:
 plugins:
   - search:
       lang: zh
-
 # 扩展
 markdown_extensions:
   - admonition

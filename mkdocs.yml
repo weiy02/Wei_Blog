@@ -59,6 +59,7 @@ plugins:
       lang: zh
 # 扩展
 markdown_extensions:
+  - attr_list
   - admonition
   - def_list
   - footnotes

@@ -143,7 +143,7 @@
 
   ┌──────────────┐    ┌─────────────┐    ┌───────────┐
   │   Event      │ -> │  Workflow   │ -> │   Jobs    │
-  │  (触发条件)   │    │  (工作流)    │    │  (多个任务) │
+  │  (触发条件)    |    │  (工作流)    │    │  (多个任务) │
   └──────────────┘    └─────────────┘    └───────────┘
                                                 │
                                        ┌────────┴────────┐
@@ -159,33 +159,33 @@
   你的博客的工作流拆解
 
   来看你的 deploy.yml：
+```yml
+name: Deploy to GitHub Pages            # 工作流名称
+on:                                     # 触发条件
+  push:
+    branches:
+      - main                            # 只有 main 分支有 push 时才触发
 
-  name: Deploy to GitHub Pages            # 工作流名称
-  on:                                     # 触发条件
-    push:
-      branches:
-        - main                            # 只有 main 分支有 push 时才触发
+permissions:
+  contents: write                       # 给这个工作流写入权限
 
-  permissions:
-    contents: write                       # 给这个工作流写入权限
+jobs:
+  deploy:                               # 任务名称
+    runs-on: ubuntu-latest              # 在 Ubuntu 服务器上运行
+    steps:
+      - uses: actions/checkout@v4       # 步骤1：把代码拉取到服务器
 
-  jobs:
-    deploy:                               # 任务名称
-      runs-on: ubuntu-latest              # 在 Ubuntu 服务器上运行
-      steps:
-        - uses: actions/checkout@v4       # 步骤1：把代码拉取到服务器
+      - uses: actions/setup-python@v5   # 步骤2：安装 Python
 
-        - uses: actions/setup-python@v5   # 步骤2：安装 Python
+      - run: pip install mkdocs-material # 步骤3：安装 MkDocs
 
-        - run: pip install mkdocs-material # 步骤3：安装 MkDocs
+      - run: mkdocs build               # 步骤4：构建静态网站
 
-        - run: mkdocs build               # 步骤4：构建静态网站
-
-        - uses: peaceiris/actions-gh-pages@v4  # 步骤5：把构建结果推送到 gh-pages 分支
-          with:
-            github_token: ${{ secrets.GITHUB_TOKEN }}
-            publish_dir: ./site
-
+      - uses: peaceiris/actions-gh-pages@v4  # 步骤5：把构建结果推送到 gh-pages 分支
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+```
   每个步骤在干什么：
   1. checkout — 把你的仓库代码下载到云服务器
   2. setup-python — 安装 Python 运行环境
@@ -234,6 +234,8 @@
   总结就是一句话：你只需要 git push，剩下的 Actions 自动搞定。
 
 
+## 控制图片大小
+
  方式一：直接用 HTML <img> 标签（推荐，无需额外配置）
   
   <img src="../images/Classes/数据库/群公告.jpg" alt="群公告" width="400" />
@@ -272,3 +274,53 @@
   改成类似：
 
   <img src="../images/Classes/数据库/群公告.jpg" alt="群公告" width="500" />
+
+
+## 在网页中放下载链接
+
+方式一：直接放文件 + 链接（推荐）
+     
+  步骤：
+
+  1. 在 docs/ 下创建一个 downloads 文件夹：
+  docs/downloads/     ← 放你要分享的文件
+  2. 把要分享的文件（比如 笔记.pdf、代码.zip）放进去
+  3. 在 markdown 中用普通链接指向它：
+  [下载笔记](downloads/笔记.pdf)
+  [下载源代码](downloads/代码.zip)
+
+  MkDocs 构建时会自动把 docs/ 下的非 markdown 文件原样复制到站点中，链接就能直接下载。
+
+  ---
+  方式二：用 assets/ 目录
+
+  项目根目录已经有个 assets/ 文件夹，你也可以往里面放文件：
+
+  assets/资料.zip
+
+  然后在 markdown 中引用（注意路径要相对于 docs/）：
+  [下载资料](../assets/资料.zip)
+
+  ---
+  方式三：用按钮样式（更美观）
+
+  Material 主题支持给链接加按钮样式：
+
+  [下载笔记](downloads/笔记.pdf){ .md-button }
+  [下载源代码](downloads/代码.zip){ .md-button .md-button--primary }
+
+  效果是一个显眼的按钮，比纯文本链接更好看。
+
+  ---
+  举个实际例子
+
+  比如你想在 Java 文档页加一个下载链接，可以这样写：
+
+  ## 参考资料
+
+  - [Java 学习笔记 PDF 下载](downloads/Java笔记.pdf){ .md-button }
+
+  然后在 docs/downloads/ 里放上 Java笔记.pdf 即可。
+
+  ---
+  总结： 往 docs/downloads/ 里放文件 → 用 markdown 链接指向它 → 搞定。需要我帮你创建 downloads 文件夹，或者给你的 Java 页面加个示例链接吗？

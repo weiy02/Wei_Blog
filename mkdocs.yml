@@ -13,16 +13,20 @@ nav:
   - 首页: index.md
   - 关于: about.md
   - 样式演示: demo.md
-  - AtCoder:
-    - Beginner Contest:
-      - abc458: AtCoder/AtCoder_Beginner_Contest/abc458.md
-      - abc461: AtCoder/AtCoder_Beginner_Contest/abc461.md
-  - LeetCode:
-    - 第11题: LeetCode/11.md
-    - 第46题: LeetCode/46.md
+  - 刷题:
+    - AtCoder:
+      - Beginner Contest:
+        - abc458: ShuaTi/AtCoder/AtCoder_Beginner_Contest/abc458.md
+        - abc461: ShuaTi/AtCoder/AtCoder_Beginner_Contest/abc461.md
+    - LeetCode:
+      - 第11题: ShuaTi/LeetCode/11.md
+      - 第46题: ShuaTi/LeetCode/46.md
   - 课内课程:
-    - 数据库: Classes/数据库.md
     - Java: Classes/Java.md
+    - 数据库: Classes/数据库.md
+  - 算法:
+    - Java: Algorithms/Java.md
+    - C++: Algorithms/C++.md
 # 主题
 theme:
   name: material

@@ -2,6 +2,16 @@
 title: Java
 ---
 
+## 考试题型（初步）
+
+- 选择题（20分）
+- 填空题（20分）
+- 判断题（10分）
+- 简答题（主要考核心概念的深入理解）（20分）
+- 编程题（30分）
+
+考察范围前八章，其中第七章拟涉及内部类和异常类，第八章涉及String类，正则表达式，Scanner类，BigInteger类与Random类。
+
 ## Java变量命名规则
 
 1. 可以包含字母，数字，`_`，`$`
@@ -532,4 +542,5 @@ String[] parts = "hello,world;java".split("[;,]");
 ## 常用算法思想技巧
 
 !!! quote
-    本页内容部分来来自于[菜鸟教程](https://www.runoob.com/java/java-tutorial.html)
+    <!-- 本页内容部分来来自于[菜鸟教程](https://www.runoob.com/java/java-tutorial.html) -->
+    本页的部分内容引用其他网站内容

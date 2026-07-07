@@ -30,7 +30,7 @@ nav:
 # 主题
 theme:
   name: material
-  custom_dir: overrides
+
   language: 'zh'
   palette:
     - media: "(prefers-color-scheme: light)"

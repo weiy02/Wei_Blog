@@ -30,6 +30,7 @@ nav:
 # 主题
 theme:
   name: material
+  custom_dir: overrides
   language: 'zh'
   palette:
     - media: "(prefers-color-scheme: light)"
@@ -89,3 +90,10 @@ markdown_extensions:
   - pymdownx.tilde
   - pymdownx.tabbed:
       alternate_style: true
+
+# 自定义样式和脚本
+extra_css:
+  - assets/css/toc-collapsible.css
+
+extra_javascript:
+  - assets/js/toc-collapsible.js

@@ -1,0 +1,42 @@
+/*
+ * Collapsible Table of Contents — right sidebar
+ *
+ * Behaviour applied by JS — no template changes needed.
+ * Left navigation is completely unaffected.
+ */
+
+/* ── Toggle label: clickable with icon ── */
+.md-sidebar--secondary .md-nav__link--toc-label {
+  cursor: pointer;
+}
+
+/* ── Arrow rotates when expanded ── */
+.md-sidebar--secondary .md-nav__toggle:checked ~ .md-nav__link--toc-label .md-nav__icon {
+  transform: rotate(90deg);
+}
+
+/* ── Hide the original link for toggle items ── */
+.md-sidebar--secondary .md-nav__item--toc-sect > a.md-nav__link {
+  display: none;
+}
+
+/* ── Ensure icon + text align on one line ── */
+.md-sidebar--secondary .md-nav__link {
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+/* ── Override theme's absolute positioning so icon stays in flex flow ── */
+.md-sidebar--secondary .md-nav__icon {
+  position: static !important;
+  flex-shrink: 0;
+  width: 0.7rem;
+  height: 0.7rem;
+  margin: 0.1rem;
+}
+
+/* ── Nested lists: increase indent to stay right of parent's arrow icon ── */
+.md-sidebar--secondary .md-nav__item .md-nav__list {
+  padding-left: 1rem !important;
+}

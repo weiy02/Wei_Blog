@@ -40,7 +40,7 @@ PORT = 8765
 BASE_URL = f"http://localhost:{PORT}"
 
 # 水印文字
-WATERMARK_TEXT = "NovaWy"
+WATERMARK_TEXT = "初屿白"
 
 # PDF 页眉/页脚
 SITE_NAME = "NovaWy"
@@ -109,7 +109,7 @@ def serve_site(directory):
 
 
 def _get_print_styles():
-    """返回注入页面的 CSS，用于隐藏 UI 元素并优化打印排版"""
+    """返回注入页面的 CSS，用于隐藏 UI 元素、目录样式并优化打印排版"""
     return """
     <style>
       /* === 隐藏网页 UI 元素 === */
@@ -171,6 +171,33 @@ def _get_print_styles():
     """
 
 
+def _register_chinese_font():
+    """注册系统可用的中文字体，返回字体名称；找不到则返回 Helvetica"""
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+
+    # Windows 常见中文字体路径
+    font_candidates = [
+        ("Microsoft YaHei", "C:/Windows/Fonts/msyh.ttc"),
+        ("SimHei", "C:/Windows/Fonts/simhei.ttf"),
+        ("SimSun", "C:/Windows/Fonts/simsun.ttc"),
+        ("DengXian", "C:/Windows/Fonts/deng.ttf"),
+        ("FangSong", "C:/Windows/Fonts/fangsong.ttf"),
+    ]
+
+    for name, path in font_candidates:
+        if os.path.exists(path):
+            try:
+                pdfmetrics.registerFont(TTFont(name, path))
+                log.info(f"   ✅ 已加载中文字体: {name}")
+                return name
+            except Exception:
+                continue
+
+    log.warning("   ⚠️ 未找到中文字体，水印可能显示为方框")
+    return "Helvetica"
+
+
 def create_watermark_overlay():
     """
     使用 reportlab 生成水印覆盖层 PDF（内存中），
@@ -180,73 +207,190 @@ def create_watermark_overlay():
     from reportlab.pdfgen import canvas
     from reportlab.lib.pagesizes import A4
 
+    font_name = _register_chinese_font()
+
     buf = io.BytesIO()
     pw, ph = A4  # 595.27 x 841.89 pt
 
     c = canvas.Canvas(buf, pagesize=A4)
 
-    # 水印配置
-    positions = [
-        (pw * 0.15, ph * 0.20),
-        (pw * 0.60, ph * 0.50),
-        (pw * 0.15, ph * 0.80),
-        (pw * 0.60, ph * 0.15),
-        (pw * 0.15, ph * 0.50),
-        (pw * 0.60, ph * 0.80),
-        (pw * 0.38, ph * 0.35),
-        (pw * 0.38, ph * 0.65),
-    ]
+    # 右下角单水印
+    margin_right = 50   # 距右边距 (pt)
+    margin_bottom = 40  # 距底边距 (pt)
+    x = pw - margin_right
+    y = margin_bottom
 
-    for x, y in positions:
-        c.saveState()
-        c.translate(x, y)
-        c.rotate(-35)
-        c.setFillColorRGB(0.5, 0.5, 0.5, alpha=0.12)
-        c.setFont("Helvetica", 42)
-        c.drawCentredString(0, 0, WATERMARK_TEXT)
-        c.setFont("Helvetica", 16)
-        c.setFillColorRGB(0.5, 0.5, 0.5, alpha=0.08)
-        c.restoreState()
+    c.saveState()
+    c.translate(x, y)
+    c.setFillColorRGB(0.6, 0.6, 0.6, alpha=0.25)
+    c.setFont(font_name, 14)
+    c.drawRightString(0, 0, WATERMARK_TEXT)
+    c.restoreState()
 
     c.save()
     buf.seek(0)
     return buf
 
 
-def stamp_watermark(pdf_path, watermark_buf):
+def _match_headings_to_pages(pdf_path, headings):
     """
-    使用 PyPDF2 将水印逐页加盖到 PDF 上（原地覆盖）。
+    使用 PyPDF2 解析 PDF 文本，为每个 heading 匹配所在页码。
+    返回 [{tag, text, page}, ...]
     """
-    from PyPDF2 import PdfReader, PdfWriter
+    from PyPDF2 import PdfReader
 
     reader = PdfReader(str(pdf_path))
-    watermark_reader = PdfReader(watermark_buf)
-    watermark_page = watermark_reader.pages[0]
+    result = []
+    for h in headings:
+        h_page = None
+        for i, page in enumerate(reader.pages):
+            text = page.extract_text()
+            if h["text"] in text:
+                h_page = i + 1  # 1-indexed
+                break
+        result.append({**h, "page": h_page})
+    return result
 
+
+def _create_toc_pdf(toc_entries, font_name="Helvetica"):
+    """
+    使用 reportlab 生成目录页 PDF（不含链接），返回 BytesIO。
+    简约风格：居中标题 + 分隔线 + 条目（左标题右页码）。
+    """
+    from reportlab.lib.units import cm
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.pagesizes import A4
+
+    pw, ph = A4
+    buf = io.BytesIO()
+    c = canvas.Canvas(buf, pagesize=A4)
+
+    # 标题
+    c.setFont(font_name, 16)
+    c.drawCentredString(pw / 2, ph - 3 * cm, "目  录")
+
+    # 细分隔线
+    margin_x = 3.5 * cm
+    c.setStrokeColorRGB(0.5, 0.5, 0.5)
+    c.setLineWidth(0.3)
+    c.line(margin_x, ph - 3.6 * cm, pw - margin_x, ph - 3.6 * cm)
+
+    # 条目
+    y = ph - 4.8 * cm
+    line_h = 0.65 * cm
+    valid = [e for e in toc_entries if e.get("page") is not None]
+
+    for entry in valid:
+        if y < 2 * cm:
+            log.warning("   ⚠️ 目录超出一页，部分条目被截断")
+            break
+        tag = entry["tag"]
+        text = entry["text"]
+        page = entry["page"]
+
+        indent = 2.5 * cm if tag == "h3" else 1.2 * cm
+        fs = 10 if tag == "h2" else 9
+
+        c.setFont(font_name, fs)
+        # 标题
+        c.drawString(indent, y, text)
+        # 页码
+        c.drawRightString(pw - 1 * cm, y, str(page))
+
+        y -= line_h
+
+    c.save()
+    buf.seek(0)
+    return buf
+
+
+def _finalize_pdf(base_pdf_path, toc_buf, toc_entries, watermark_buf=None):
+    """
+    将目录页 +（带水印的）正文合并，并添加可点击链接。
+    原地覆盖 base_pdf_path。
+    """
+    from PyPDF2 import PdfReader, PdfWriter
+    from PyPDF2.generic import AnnotationBuilder
+
+    reader = PdfReader(str(base_pdf_path))
     writer = PdfWriter()
-    for page_num, page in enumerate(reader.pages):
-        page.merge_page(watermark_page)
-        writer.add_page(page)
-        if (page_num + 1) % 5 == 0:
-            log.info(f"    加盖水印: 第 {page_num + 1}/{len(reader.pages)} 页")
 
-    # 写回临时文件再替换，避免中途中断损坏原文件
-    tmp_path = pdf_path.with_suffix(".pdf.tmp")
+    # 1. 添加目录页
+    toc_reader = PdfReader(toc_buf)
+    writer.add_page(toc_reader.pages[0])
+
+    # 2. 添加正文页（带水印）
+    watermark_page = None
+    if watermark_buf is not None:
+        w_reader = PdfReader(watermark_buf)
+        watermark_page = w_reader.pages[0]
+
+    for i, page in enumerate(reader.pages):
+        if watermark_page is not None:
+            page.merge_page(watermark_page)
+        writer.add_page(page)
+        if (i + 1) % 5 == 0:
+            log.info(f"    合并: 第 {i + 1}/{len(reader.pages)} 页")
+
+    # 3. 添加可点击链接（从目录页指向正文对应页面）
+    valid_links = [(e, e.get("page")) for e in toc_entries
+                   if e.get("page") is not None]
+
+    # 匹配 _create_toc_pdf 中的排版位置
+    from reportlab.lib.units import cm
+    pw = 595.27  # A4 宽度 pt
+    ph = 841.89  # A4 高度 pt
+    y_start = ph - 4.8 * cm
+    line_h = 0.65 * cm
+
+    link_added = 0
+    for idx, (entry, src_page) in enumerate(valid_links):
+        # TOC 是第 0 页，正文页码直接作为 writer 索引
+        dest_idx = src_page
+        if dest_idx >= len(writer.pages):
+            continue
+
+        tag = entry["tag"]
+        indent = 2.5 * cm if tag == "h3" else 1.2 * cm
+        y_pos = y_start - idx * line_h
+
+        # 链接区域：左=缩进, 右=页边距, 上下包围文字
+        rect = (indent, y_pos - 2, pw - 1 * cm, y_pos + 12)
+
+        try:
+            annotation = AnnotationBuilder.link(
+                rect=[float(v) for v in rect],
+                target_page_index=dest_idx,
+            )
+            writer.add_annotation(page_number=0, annotation=annotation)
+            link_added += 1
+        except Exception:
+            pass
+
+    # 写回文件
+    tmp_path = base_pdf_path.with_suffix(".pdf.tmp")
     with open(tmp_path, "wb") as f:
         writer.write(f)
-    shutil.move(str(tmp_path), str(pdf_path))
+    shutil.move(str(tmp_path), str(base_pdf_path))
+
+    if link_added > 0:
+        log.info(f"   🔗 已添加 {link_added} 个可点击目录链接")
+    elif valid_links:
+        log.warning(f"   ⚠️ 未能添加目录链接（共 {len(valid_links)} 个失败）")
+
+    return link_added
 
 
-def generate_one_pdf(page_info):
+def generate_one_pdf(page_info, suffix=""):
     """
     使用 Playwright 渲染单篇 PDF（不含水印），
-    返回 (pdf_path, success_bool)。
+    返回 (pdf_path, success_bool, headings_list)。
     """
     from playwright.sync_api import sync_playwright
 
     label = page_info["label"]
     url = f"{BASE_URL}{page_info['url_path']}"
-    pdf_path = PDF_DIR / f"{label}.pdf"
+    pdf_path = PDF_DIR / f"{label}{suffix}.pdf"
 
     pdf_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -275,7 +419,21 @@ def generate_one_pdf(page_info):
 
             pdf_page.wait_for_timeout(800)
 
-            # 注入打印样式（隐藏 UI、优化排版，但不含背景水印）
+            # 提取页面 h2/h3 标题（供生成目录使用）
+            headings_data = pdf_page.evaluate("""
+                () => {
+                    const c = document.querySelector('.md-content__inner') ||
+                              document.querySelector('article') ||
+                              document.querySelector('.md-content');
+                    if (!c) return [];
+                    return Array.from(c.querySelectorAll('h2, h3')).map(h => ({
+                        tag: h.tagName.toLowerCase(),
+                        text: h.textContent.trim(),
+                    })).filter(h => h.text);
+                }
+            """)
+
+            # 注入打印样式（隐藏 UI、优化排版）
             pdf_page.evaluate(f"""
                 (function() {{
                     const el = document.createElement('div');
@@ -328,7 +486,7 @@ def generate_one_pdf(page_info):
 
             pdf_page.close()
             browser.close()
-            return pdf_path, True
+            return pdf_path, True, headings_data
 
         except Exception as e:
             try:
@@ -339,12 +497,19 @@ def generate_one_pdf(page_info):
             raise e
 
 
-def generate_pdfs(pages):
-    """生成所有 PDF 并加盖水印"""
+def generate_pdfs(pages, no_watermark=False):
+    """生成所有 PDF：渲染 → 匹配页码 → 生成目录 → 合并 + 水印 + 链接"""
     # 预创建水印覆盖层（所有文章共用同一个）
-    log.info("🎨 创建水印覆盖层...")
-    watermark_buf = create_watermark_overlay()
-    log.info("   ✅ 水印覆盖层就绪")
+    if not no_watermark:
+        log.info("🎨 创建水印覆盖层...")
+        watermark_buf = create_watermark_overlay()
+        log.info("   ✅ 水印覆盖层就绪")
+    else:
+        watermark_buf = None
+        log.info("⏭️  无水印模式")
+
+    # 统一注册中文字体（供目录使用）
+    toc_font = _register_chinese_font()
 
     total = len(pages)
     success = 0
@@ -354,22 +519,53 @@ def generate_pdfs(pages):
         label = page_info["label"]
         log.info(f"[{i}/{total}] 📖 {label}")
 
-        try:
-            # Step 1: Playwright 导出干净 PDF
-            pdf_path, ok = generate_one_pdf(page_info)
+        # 无水印时文件名加后缀
+        suffix = "-无水印" if no_watermark else ""
+        pdf_path = PDF_DIR / f"{label}{suffix}.pdf"
 
-            # 验证大小
+        if pdf_path.exists():
+            log.info(f"   ⚠️ 文件已存在，将覆盖: {pdf_path.name}")
+
+        try:
+            # Step 1: Playwright 导出干净 PDF + 提取标题
+            pdf_path, ok, headings_data = generate_one_pdf(page_info, suffix=suffix)
+
             file_size = pdf_path.stat().st_size
             if file_size < 1000:
-                log.warning(f"   ⚠️ PDF 过小 ({file_size} bytes)")
+                log.warning(f"   ⚠️ PDF 过小 ({file_size} bytes)，跳过")
                 success += 1
                 continue
-
             log.info(f"   ✅ 页面渲染完成 ({file_size // 1024} KB)")
 
-            # Step 2: 逐页加盖水印
-            log.info(f"   🖊️  加盖水印...")
-            stamp_watermark(pdf_path, watermark_buf)
+            # Step 2: 匹配标题到页码
+            if headings_data and len(headings_data) >= 2:
+                log.info(f"   📑 正在匹配 {len(headings_data)} 个章节的页码...")
+                toc_entries = _match_headings_to_pages(pdf_path, headings_data)
+                found = sum(1 for e in toc_entries if e.get("page") is not None)
+                log.info(f"   📑 成功匹配 {found}/{len(toc_entries)} 个章节")
+
+                # Step 3: 生成目录页
+                log.info(f"   📄 生成目录页...")
+                toc_buf = _create_toc_pdf(toc_entries, font_name=toc_font)
+
+                # Step 4: 合并目录 + 正文 + 水印 + 链接
+                _finalize_pdf(pdf_path, toc_buf, toc_entries,
+                              watermark_buf=watermark_buf)
+            else:
+                log.info(f"   ℹ️ 章节少于 2 个，跳过目录生成")
+                # 仅加盖水印（无需目录时的快速路径）
+                if not no_watermark and watermark_buf is not None:
+                    from PyPDF2 import PdfReader, PdfWriter
+                    reader = PdfReader(str(pdf_path))
+                    writer = PdfWriter()
+                    wm_page = PdfReader(watermark_buf).pages[0]
+                    for p in reader.pages:
+                        p.merge_page(wm_page)
+                        writer.add_page(p)
+                    tmp_path = pdf_path.with_suffix(".pdf.tmp")
+                    with open(tmp_path, "wb") as f:
+                        writer.write(f)
+                    shutil.move(str(tmp_path), str(pdf_path))
 
             final_size = pdf_path.stat().st_size
             log.info(f"   ✅ PDF 生成完毕 ({final_size // 1024} KB)")
@@ -377,6 +573,8 @@ def generate_pdfs(pages):
 
         except Exception as e:
             log.error(f"   ❌ 生成失败: {e}")
+            import traceback
+            traceback.print_exc()
             failed += 1
 
     log.info(f"\n{'='*55}")
@@ -404,6 +602,11 @@ def main():
     )
     parser.add_argument(
         "--port", type=int, default=PORT, help=f"本地服务器端口 (默认 {PORT})"
+    )
+    parser.add_argument(
+        "--no-watermark",
+        action="store_true",
+        help='不添加水印（默认添加右下角"初屿白"水印）',
     )
     args = parser.parse_args()
 
@@ -453,7 +656,7 @@ def main():
     time.sleep(0.5)
 
     try:
-        success, failed = generate_pdfs(pages)
+        success, failed = generate_pdfs(pages, no_watermark=args.no_watermark)
         if failed > 0:
             sys.exit(1)
     finally:

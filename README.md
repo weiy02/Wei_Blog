@@ -46,6 +46,17 @@ python scripts/generate-pdfs.py
 python scripts/generate-pdfs.py LeetCode/11
 python scripts/generate-pdfs.py LeetCode/11.md
 python scripts/generate-pdfs.py Classes/数据库
+
+# 导出无水印版本（文件名追加"-无水印"后缀）
+python scripts/generate-pdfs.py --no-watermark
 ```
+
+**功能特点：**
+- 每篇 PDF 第一页为 **自动生成的目录**，含章节标题与对应页码
+- 目录条目 **可点击跳转** 到对应章节
+- 每页右下角小字水印 `初屿白`（浅灰色，25% 透明度）
+- 页眉显示站点名与文章名，页脚显示页码
+- 添加 `--no-watermark` 参数则无任何水印，文件名格式为 `文章名-无水印.pdf`
+- 如果已有同名 PDF 则会自动覆盖
 
 PDF 输出到 `pdf-output/` 目录，按文章路径组织。

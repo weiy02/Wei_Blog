@@ -385,6 +385,8 @@ if(a>=5){
 
 ### 方法重载与多态
 
+**多态：**父类的某个方法被其子类重写的时候可以产生各自的功能行为
+
 ### this关键字
 
 ### 对象数组
@@ -492,7 +494,81 @@ class son extends father{
 
 ### 抽象类与抽象方法
 
+```java
+public abstract class Animal {
+
+    // 抽象类可以有普通成员变量
+    String name;
+
+    // 抽象类可以有构造方法（用于子类调用）
+    public Animal(String name) {
+        this.name = name;
+    }
+
+    // 2. 抽象方法：只有声明，没有实现，必须用 abstract
+    // 子类必须重写这个方法！
+    public abstract void makeSound();
+
+    // 3. 抽象类可以有普通方法（有具体实现）
+    public void eat() {
+        System.out.println(name + " 在吃东西");
+    }
+}
+```
+
+```java
+public class Dog extends Animal {
+
+    // 子类构造方法要先调用父类构造
+    public Dog(String name) {
+        super(name);
+    }
+
+    // 必须重写抽象方法
+    @Override
+    public void makeSound() {
+        System.out.println(name + " 汪汪叫");
+    }
+}
+```
+
+```java
+public class Cat extends Animal {
+
+    public Cat(String name) {
+        super(name);
+    }
+
+    @Override
+    public void makeSound() {
+        System.out.println(name + " 喵喵叫");
+    }
+}
+```
+
+```java
+public class TestAbstract {
+    public static void main(String[] args) {
+
+        // 错误！抽象类不能直接实例化
+        // Animal animal = new Animal("动物");
+
+        // 正确：用子类实例化
+        Animal dog = new Dog("旺财");
+        Animal cat = new Cat("咪咪");
+
+        dog.makeSound();
+        cat.makeSound();
+
+        dog.eat();
+        cat.eat();
+    }
+}
+```
+
 ### 开闭原则
+
+对扩展开放，对修改关闭
 
 ### 抛出异常
 

@@ -20,11 +20,16 @@ mkdocs build
 ## 目录结构
 
 ```
-docs/
-  index.md      # 首页
-  about.md      # 关于页面
-  images/       # 图片资源
-mkdocs.yml      # 站点配置文件
+content/               # 📝 写作区域 — 所有文章和页面
+  index.md             # 首页
+  about.md             # 关于页面
+  _static/             # 🔧 网站功能文件（CSS/JS/图标）
+  images/              # 文章配图
+  Algorithms/          # 算法笔记
+  Classes/             # 课程笔记
+  ShuaTi/              # 刷题记录
+scripts/               # 🔧 开发脚本
+mkdocs.yml             # 站点配置文件
 ```
 
 ## 导出文章为 PDF

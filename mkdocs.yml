@@ -3,6 +3,7 @@ site_name: NovaWy
 site_description: 个人技术博客
 site_author:
 site_url: https://blog.novawy.fun
+docs_dir: content
 strict: false
 
 # 版权
@@ -47,7 +48,7 @@ theme:
       toggle:
         icon: material/weather-night
         name: 切换亮色模式
-  favicon: 'favicon.ico'
+  favicon: '_static/favicon.ico'
   icon:
     logo: 'material/school'
   features:
@@ -93,7 +94,7 @@ markdown_extensions:
 
 # 自定义样式和脚本
 extra_css:
-  - assets/css/toc-collapsible.css
+  - _static/css/toc-collapsible.css
 
 extra_javascript:
-  - assets/js/toc-collapsible.js
+  - _static/js/toc-collapsible.js

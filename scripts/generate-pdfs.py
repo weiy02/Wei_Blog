@@ -176,8 +176,14 @@ def _register_chinese_font():
     from reportlab.pdfbase import pdfmetrics
     from reportlab.pdfbase.ttfonts import TTFont
 
-    # Windows 常见中文字体路径
+    # macOS / Windows 常见中文字体路径
     font_candidates = [
+        # macOS
+        ("STHeiti Medium", "/System/Library/Fonts/STHeiti Medium.ttc"),
+        ("STHeiti Light", "/System/Library/Fonts/STHeiti Light.ttc"),
+        ("Songti", "/System/Library/Fonts/Supplemental/Songti.ttc"),
+        ("PingFang", "/System/Library/Fonts/PingFang.ttc"),
+        # Windows
         ("Microsoft YaHei", "C:/Windows/Fonts/msyh.ttc"),
         ("SimHei", "C:/Windows/Fonts/simhei.ttf"),
         ("SimSun", "C:/Windows/Fonts/simsun.ttc"),

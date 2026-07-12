@@ -13,7 +13,9 @@ copyright: 'Copyright &copy; 2026'
 nav:
   - 首页: index.md
   - 关于: about.md
-  - 样式演示: demo.md
+  # - 样式演示: demo.md
+  - 杂项:
+    - 稀疏矩阵: 杂项/稀疏矩阵.md
   - 刷题:
     - AtCoder:
       - Beginner Contest:

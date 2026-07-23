@@ -1,0 +1,152 @@
+/*
+ * Navigation bar polish — decorative enhancements for Material theme.
+ *
+ * Principle: NEVER change layout properties (margin, padding, display,
+ * position on structural elements) that Material manages. Only add
+ * colors, shadows, transitions, and pseudo-element indicators.
+ *
+ * Sections:
+ *   1. Tab bar — active indicator underline, hover feedback
+ *   2. Header — enhanced scroll shadow
+ *   3. Search — focus glow, hover highlight
+ *   4. Theme toggle — rotate transition
+ *   5. Dark mode adjustments
+ */
+
+/* ──────────────────────────────────────────────────────────────
+ * 1. Tab bar — active indicator underline & hover feedback
+ * ────────────────────────────────────────────────────────────── */
+
+/* Underline via animated background gradient — no position:relative needed */
+.md-tabs__link {
+  background-image: linear-gradient(var(--md-accent-fg-color), var(--md-accent-fg-color));
+  background-size: 0% 2.5px;
+  background-position: 50% 100%;
+  background-repeat: no-repeat;
+  transition: background-size 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.2s ease, background-color 0.2s ease;
+}
+
+/* Active tab: full underline */
+.md-tabs__item--active .md-tabs__link {
+  background-size: 55% 2.5px;
+  color: var(--md-accent-fg-color);
+}
+
+/* Hover: peek the underline */
+.md-tabs__link:hover {
+  background-size: 40% 2.5px;
+}
+
+/* Active + hover: keep underline fully visible */
+.md-tabs__item--active .md-tabs__link:hover {
+  background-size: 55% 2.5px;
+}
+
+/* ──────────────────────────────────────────────────────────────
+ * 2. Header — enhanced scroll shadow
+ * ────────────────────────────────────────────────────────────── */
+
+/* Material adds .md-header--shadow on scroll. Deepen it. */
+.md-header--shadow {
+  box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.05),
+    0 10px 24px rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-md-color-scheme="slate"] .md-header--shadow {
+  box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.25),
+    0 10px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Logo: subtle hover feedback */
+.md-logo {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.md-logo:hover {
+  transform: scale(1.08);
+  opacity: 0.85;
+}
+
+/* ──────────────────────────────────────────────────────────────
+ * 3. Search — focus glow & hover highlight
+ * ────────────────────────────────────────────────────────────── */
+
+/* Border + smooth transition for the search form */
+.md-search__form {
+  border: 1.5px solid transparent;
+  transition:
+    background-color 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+/* Light hover lift */
+.md-search__form:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Focus: accent-colored ring */
+[data-md-toggle="search"]:checked ~ .md-header .md-search__form,
+.md-search__form:has(.md-search__input:focus) {
+  border-color: var(--md-accent-fg-color);
+  box-shadow: 0 0 0 2px var(--md-accent-fg-color--transparent);
+}
+
+/* Dark mode search tweaks */
+[data-md-color-scheme="slate"] .md-search__form:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-md-color-scheme="slate"] [data-md-toggle="search"]:checked ~ .md-header .md-search__form,
+[data-md-color-scheme="slate"] .md-search__form:has(.md-search__input:focus) {
+  border-color: var(--md-accent-fg-color);
+  box-shadow: 0 0 0 2px var(--md-accent-fg-color--transparent);
+}
+
+/* ──────────────────────────────────────────────────────────────
+ * 4. Theme toggle — rotate on hover
+ * ────────────────────────────────────────────────────────────── */
+
+.md-header__option .md-header__button .md-icon,
+.md-header__button[data-md-component="palette"] svg {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.md-header__option:hover .md-icon,
+.md-header__button[data-md-component="palette"]:hover svg {
+  transform: rotate(180deg);
+}
+
+/* ──────────────────────────────────────────────────────────────
+ * 6. Dark mode adjustments
+ * ────────────────────────────────────────────────────────────── */
+
+[data-md-color-scheme="slate"] .md-tabs__item--active .md-tabs__link {
+  color: var(--md-accent-fg-color);
+}
+
+[data-md-color-scheme="slate"] .md-tabs__link::after {
+  opacity: 0.9;
+}
+
+/* ──────────────────────────────────────────────────────────────
+ * 7. Reduced motion
+ * ────────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .md-tabs__link {
+    transition: none;
+  }
+
+  .md-header__option .md-header__button .md-icon,
+  .md-header__button[data-md-component="palette"] svg {
+    transition: none;
+  }
+
+  .md-logo {
+    transition: none;
+  }
+}

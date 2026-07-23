@@ -16,14 +16,17 @@ nav:
   # - 样式演示: demo.md
   - 杂项:
     - 稀疏矩阵: 杂项/稀疏矩阵.md
-  - 刷题:
+  - 算法竞赛:
     - AtCoder:
       - Beginner Contest:
         - abc458: ShuaTi/AtCoder/AtCoder_Beginner_Contest/abc458.md
         - abc461: ShuaTi/AtCoder/AtCoder_Beginner_Contest/abc461.md
     - LeetCode:
       - 第11题: ShuaTi/LeetCode/11.md
-      - 第46题: ShuaTi/LeetCode/46.md
+      - 三数之和: ShuaTi/LeetCode/15.md
+      - 接雨水: ShuaTi/LeetCode/42.md
+      - 全排列: ShuaTi/LeetCode/46.md
+      - 无重复字符的最长子串: ShuaTi/LeetCode/3.md
   - 课内课程:
     - Java: Classes/Java.md
     - 数据库: Classes/数据库.md
@@ -100,6 +103,7 @@ markdown_extensions:
 extra_css:
   - _static/css/toc-collapsible.css
   - _static/css/ui-polish.css
+  - _static/css/nav-polish.css
 
 extra_javascript:
   - _static/js/mathjax-config.js

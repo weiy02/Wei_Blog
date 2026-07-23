@@ -1,12 +1,13 @@
 /**
  * Collapsible TOC — Make the right-side table of contents collapsible.
  *
- * - Only top-level headings shown by default
- * - Click a heading with sub-sections to expand / collapse
- * - Also scrolls to that section in the article
- * - Auto-expands ancestors of the currently-visible section
- * - Handles Material's instant navigation (no full reload)
- * - Aligns all items by adding spacer to non-toggle items
+ * Improvements over basic version:
+ *   - Smooth height animation (CSS grid) on expand/collapse
+ *   - Accordion behaviour: expanding one sibling collapses others at the same level
+ *   - Clicking a parent heading scrolls to it AND toggles children
+ *   - Auto-expands ancestors of the currently-visible section
+ *   - Handles Material's instant navigation (no full reload)
+ *   - Aligns all items by adding spacer to non-toggle items
  */
 
 /* ── Initialise (runs on load and after instant navigation) ── */
@@ -71,16 +72,41 @@ function initCollapsibleToc() {
     item.insertBefore(toggle, link);
     item.insertBefore(label, link);
 
-    /* Click on label also scrolls to the heading */
-    label.addEventListener("click", function () {
+    /* Split behaviour:
+     *   - Click the arrow icon  → toggle expand/collapse (default checkbox action)
+     *   - Click the text/label  → scroll to the heading, do NOT toggle
+     */
+    label.addEventListener("click", function (e) {
       var href = link.getAttribute("href");
       if (!href) return;
+
+      var isIconClick = e.target.closest(".md-nav__icon");
+
+      if (isIconClick) {
+        /* Let the checkbox toggle naturally; accordion handled by change listener */
+        return;
+      }
+
+      /* Text/empty-area click: smooth scroll only */
+      e.preventDefault();
       var target = document.querySelector(href);
       if (target) {
         setTimeout(function () {
           target.scrollIntoView({ behavior: "smooth", block: "start" });
         }, 10);
       }
+    });
+
+    /* Accordion behaviour at each level: when this item expands,
+     * collapse its siblings at the same nesting level. */
+    toggle.addEventListener("change", function () {
+      if (!toggle.checked || !item.parentElement) return;
+      Array.from(item.parentElement.querySelectorAll(":scope > li.md-nav__item"))
+        .forEach(function (sibling) {
+          if (sibling === item) return;
+          var siblingToggle = sibling.querySelector(":scope > .md-nav__toggle");
+          if (siblingToggle) siblingToggle.checked = false;
+        });
     });
 
     /* Recurse into children */
@@ -150,6 +176,6 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 /* ── Run after Material instant navigation ── */
-document.addEventListener("DOMContentSwitch", function () {
+document.addEventListener("documentContentSwitch", function () {
   setTimeout(initCollapsibleToc, 80);
 });

@@ -27,8 +27,6 @@ nav:
       - 接雨水: ShuaTi/LeetCode/42.md
       - 全排列: ShuaTi/LeetCode/46.md
       - 无重复字符的最长子串: ShuaTi/LeetCode/3.md
-    - 牛客:
-      - 牛客周赛154: 
   - 课内课程:
     - Java: Classes/Java.md
     - 数据库: Classes/数据库.md

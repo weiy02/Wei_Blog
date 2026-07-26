@@ -30,9 +30,9 @@ nav:
   - 课内课程:
     - Java: Classes/Java.md
     - 数据库: Classes/数据库.md
-  - 算法:
-    - Java: Algorithms/Java.md
-    - C++: Algorithms/C++.md
+  - C++基础:
+    - Java: CPP/Java.md
+    - C++: CPP/C++.md
 # 主题
 theme:
   name: material

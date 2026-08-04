@@ -31,15 +31,11 @@ nav:
     - Java: Classes/Java.md
     - 数据库: Classes/数据库.md
   - C++基础:
-    - 字符串处理: CPP/Java.md
-    - 栈: CPP/C++.md
-    - 队列: CPP/C++.md
+    - 字符串处理: CPP/String.md
+    - 栈: CPP/Stack.md
+    - 堆与优先队列: CPP/堆与优先队列.md
     - 双端队列: CPP/C++.md
-    - 数组
-    - 集合
-    - 映射
-    - Pair
-    - 堆
+    - vector: CPP/vector.md
 # 主题
 theme:
   name: material

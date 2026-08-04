@@ -44,15 +44,11 @@ theme:
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: white
-      accent: red
       toggle:
         icon: material/weather-sunny
         name: 切换暗色模式
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: blue
-      accent: blue
       toggle:
         icon: material/weather-night
         name: 切换亮色模式
@@ -63,9 +59,6 @@ theme:
     - navigation.tabs
     - navigation.instant
     - content.code.copy
-  font:
-    text: 'Fira Sans'
-    code: 'Fira Mono'
 
 # 插件
 plugins:
@@ -104,11 +97,7 @@ markdown_extensions:
 
 # 自定义样式和脚本
 extra_css:
-  - _static/css/toc-collapsible.css
-  - _static/css/ui-polish.css
-  - _static/css/nav-polish.css
-
+  - _static/css/typography.css
 extra_javascript:
   - _static/js/mathjax-config.js
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
-  - _static/js/toc-collapsible.js

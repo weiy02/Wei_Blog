@@ -1,0 +1,35 @@
+/* ============================================================
+   全局字体 — 霞鹜文楷（LXGW WenKai）
+   圆润温暖的手写感，不潦草不正式，适合个人博客整站使用
+   通过 jsDelivr CDN 加载
+   ============================================================ */
+
+@import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.7.0/style.css');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+
+/* ---------- 全局文字 ---------- */
+/* Nunito 在前：拉丁字母/数字用 Nunito（圆润温暖） */
+/* LXGW WenKai 在后：中日韩字符用霞鹜文楷         */
+:root {
+  --md-text-font: "Nunito", "LXGW WenKai Lite", "LXGW WenKai",
+    "ZCOOL XiaoWei",
+    "STKaiti", "Kaiti SC", "KaiTi", "楷体",
+    "Noto Serif SC", Georgia, serif;
+}
+
+.md-typeset {
+  font-size: 0.82rem;
+  line-height: 1.85;
+}
+
+/* ---------- 代码保持等宽 ---------- */
+:root {
+  --md-code-font: "Fira Code", "SF Mono", "Cascadia Code",
+    "JetBrains Mono", Menlo, Consolas, monospace;
+}
+
+/* ---------- 标题层级 ---------- */
+.md-typeset h1 { font-size: 2em; }
+.md-typeset h2 { font-size: 1.6em; }
+.md-typeset h3 { font-size: 1.3em; }
+.md-typeset h4 { font-size: 1.1em; }

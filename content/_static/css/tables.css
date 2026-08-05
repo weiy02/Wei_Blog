@@ -1,0 +1,38 @@
+/* ============================================================
+   表格美化 — 圆角 + 粉色悬停
+   覆盖 Material 主题默认的表格样式（默认圆角 .1rem，悬停浅灰）
+   通过 color-scheme 变量适配明暗主题
+   ============================================================ */
+
+/* ---------- 悬停底色：粉色（明暗主题各一套） ---------- */
+:root {
+  --md-table-hover: #ffe0ec; /* 亮色模式：浅粉 */
+}
+[data-md-color-scheme="slate"] {
+  --md-table-hover: #4d2f3b; /* 暗色模式：暗玫瑰粉 */
+}
+
+/* ---------- 圆角 ---------- */
+/* 主题自带的 overflow: auto 会把表头背景按圆角裁掉，所以只加大 table 的圆角即可 */
+.md-typeset table:not([class]) {
+  border-radius: 0.625rem; /* 10px */
+}
+
+/* 兜底：四个角对应的单元格也加圆角，避免个别浏览器不裁剪表头背景 */
+.md-typeset table:not([class]) thead th:first-child {
+  border-top-left-radius: 0.625rem;
+}
+.md-typeset table:not([class]) thead th:last-child {
+  border-top-right-radius: 0.625rem;
+}
+.md-typeset table:not([class]) tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 0.625rem;
+}
+.md-typeset table:not([class]) tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 0.625rem;
+}
+
+/* ---------- 悬停：粉色底 ---------- */
+.md-typeset table:not([class]) tbody tr:hover {
+  background-color: var(--md-table-hover);
+}

@@ -1,0 +1,30 @@
+/* ============================================================
+   文章图片美化 — 圆角阴影 + 悬停轻微浮动
+   仅作用于正文内容里的 <img>（.md-typeset 容器内）
+   圆角沿用表格的 0.625rem，保持整站视觉一致
+   ============================================================ */
+
+/* ---------- 阴影色值：明暗主题各一套 ---------- */
+:root {
+  --md-img-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+  --md-img-shadow-hover: 0 10px 24px rgba(0, 0, 0, 0.18);
+}
+[data-md-color-scheme="slate"] {
+  --md-img-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  --md-img-shadow-hover: 0 10px 24px rgba(0, 0, 0, 0.55);
+}
+
+/* ---------- 默认状态：圆角 + 柔和阴影 ---------- */
+.md-typeset img {
+  border-radius: 0.625rem; /* 10px，与表格一致 */
+  box-shadow: var(--md-img-shadow);
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+/* ---------- 悬停：轻微上浮 + 阴影加深 ---------- */
+.md-typeset img:hover {
+  transform: translateY(-0.25rem);
+  box-shadow: var(--md-img-shadow-hover);
+}

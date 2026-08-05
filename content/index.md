@@ -5,6 +5,7 @@ title: 首页
 ## 最近文章
 
 - [关于我](about.md)
+- [样式展示](demo.md)
 
 <div class="grid cards" markdown>
 

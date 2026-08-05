@@ -1,0 +1,72 @@
+/* ===== 404 页面 ===== */
+/* 主题自适应：使用 Material 的 CSS 变量，明暗模式下均适用 */
+
+.mdx-404 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 55vh;
+  padding: 2rem 0 3rem;
+}
+
+/* 大号 404 数字 */
+.mdx-404__code {
+  display: flex;
+  align-items: center;
+  gap: 0.06em;
+  font-size: clamp(6.5rem, 18vw, 13rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  user-select: none;
+}
+
+/* 渐变文字（主色 -> 紫色） */
+.mdx-404__num {
+  background: linear-gradient(135deg, var(--md-primary-fg-color) 0%, #7c4dff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* 中间的宇航员，缓慢浮动 */
+.mdx-404__orbit {
+  display: inline-block;
+  font-size: 0.4em;
+  margin: 0 0.05em;
+  animation: mdx-404-float 3s ease-in-out infinite;
+}
+
+@keyframes mdx-404-float {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50%      { transform: translateY(-14px) rotate(4deg); }
+}
+
+.mdx-404__title {
+  margin-top: 1.5rem;
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 700;
+}
+
+.mdx-404__desc {
+  margin: 0.6rem 0 1.8rem;
+  max-width: 32rem;
+  color: var(--md-default-fg-color--light);
+}
+
+.mdx-404__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.8rem;
+}
+
+/* 手机端按钮撑满 */
+@media (max-width: 480px) {
+  .mdx-404__actions .md-button {
+    width: 100%;
+  }
+}

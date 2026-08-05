@@ -1,0 +1,33 @@
+{#-
+  自定义 404 页面模板
+  - 通过 theme.custom_dir 覆盖 Material 默认的 404.html
+  - 样式在 _static/css/404.css
+-#}
+{% extends "main.html" %}
+
+{% block content %}
+  <div class="mdx-404">
+
+    <div class="mdx-404__code" aria-hidden="true">
+      <span class="mdx-404__num">4</span>
+      <span class="mdx-404__orbit" role="img" aria-label="迷失的宇航员">👨‍🚀</span>
+      <span class="mdx-404__num">4</span>
+    </div>
+
+    <h1 class="mdx-404__title">页面走丢了</h1>
+    <p class="mdx-404__desc">
+      你访问的页面不存在，可能已被移动或删除。<br>
+      不如回到首页看看有没有感兴趣的文章？
+    </p>
+
+    <div class="mdx-404__actions">
+      <a href="{{ config.extra.homepage | d(nav.homepage.url, true) | url }}" class="md-button md-button--primary">
+        返回首页
+      </a>
+      <a href="javascript:history.back()" class="md-button">
+        返回上一页
+      </a>
+    </div>
+
+  </div>
+{% endblock %}

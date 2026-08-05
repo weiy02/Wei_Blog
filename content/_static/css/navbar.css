@@ -1,0 +1,153 @@
+/* ============================================================
+   顶部导航栏毛玻璃效果
+   背景模糊 + 高不透明度：颜色保持接近原主色，滚动时内容在下方微微透出磨砂质感
+   基于 Material 的 CSS 变量，明暗主题自动适配
+   ============================================================ */
+
+.md-header,
+.md-tabs {
+  /* 兜底：不支持 backdrop-filter / color-mix 的浏览器保持纯色 */
+  background-color: var(--md-primary-fg-color);
+
+  /* 毛玻璃模糊 */
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+
+  /* 主色 95% 不透明度：颜色几乎不变，只留一点点透出空间给模糊效果 */
+  background-color: color-mix(in srgb, var(--md-primary-fg-color) 95%, transparent);
+}
+
+/* ============================================================
+   搜索框美化（仅桌面端；移动端是全屏覆盖层，保持默认）
+   胶囊形 + 磨砂玻璃，与导航栏风格一致
+   ============================================================ */
+@media screen and (min-width: 60em) {
+
+  /* 静止：半透明白色胶囊 */
+  .md-search__form {
+    background-color: rgba(255, 255, 255, 0.10);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 999px;
+    height: 1.9rem;
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  /* 悬停：微微提亮 */
+  .md-search__form:hover {
+    background-color: rgba(255, 255, 255, 0.16);
+    border-color: rgba(255, 255, 255, 0.28);
+  }
+
+  /* 聚焦：外圈光晕 */
+  .md-search__form:focus-within {
+    background-color: rgba(255, 255, 255, 0.20);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.18);
+  }
+
+  /* 占位符更柔和 */
+  .md-search__input::placeholder {
+    color: rgba(255, 255, 255, 0.72);
+  }
+
+  /* 点击展开为白色搜索面板时：圆角与胶囊衔接，去掉玻璃模糊 */
+  [data-md-toggle="search"]:checked ~ .md-header .md-search__form {
+    border-color: transparent;
+    border-radius: 1rem 1rem 0 0;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* ============================================================
+   搜索展开面板美化（结果卡片 / 条目 / 关键词高亮）
+   ============================================================ */
+@media screen and (min-width: 60em) {
+
+  /* 下拉结果与输入框合成一张圆角卡片，柔和阴影 */
+  [data-md-toggle="search"]:checked ~ .md-header .md-search__output {
+    border-radius: 0 0 1rem 1rem;
+    box-shadow: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.14);
+  }
+
+  /* 展开动画：淡入 + 轻微上浮 */
+  .md-search__output {
+    transform: translateY(-8px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  [data-md-toggle="search"]:checked ~ .md-header .md-search__output {
+    transform: translateY(0);
+  }
+
+  /* 结果统计行：去掉底色，留白更干净 */
+  .md-search-result__meta {
+    background-color: transparent;
+    letter-spacing: 0.05em;
+  }
+
+  /* 条目：留出呼吸空间，悬停成圆角高亮条 */
+  .md-search-result__item {
+    padding: 0 0.5rem;
+  }
+  .md-search-result__link {
+    border-radius: 0.5rem;
+  }
+  .md-search-result__link:hover,
+  .md-search-result__link:focus {
+    background-color: var(--md-default-fg-color--lightest);
+  }
+
+  /* 标题：约束到适合下拉的尺寸 */
+  .md-search-result__article.md-typeset h1 {
+    font-size: 0.95rem;
+    margin: 0.4rem 0 0.2rem;
+  }
+  .md-search-result__article.md-typeset h2 {
+    font-size: 1.05rem;
+    margin: 0.4rem 0 0.2rem;
+  }
+
+  /* 命中的关键词：主色徽章式高亮 */
+  .md-search-result__article > em {
+    font-style: normal;
+    font-weight: 700;
+    color: var(--md-primary-fg-color);
+    background: color-mix(in srgb, var(--md-primary-fg-color) 12%, transparent);
+    border-radius: 0.2rem;
+    padding: 0 0.15rem;
+  }
+  .md-search-result__terms em {
+    background: none;
+    font-style: italic;
+    font-weight: 400;
+    color: inherit;
+  }
+
+  /* 底部「查看全部结果」按钮 */
+  .md-search-result__more > summary > div {
+    text-align: center;
+    font-size: 0.68rem;
+    color: var(--md-primary-fg-color);
+    border-radius: 999px;
+  }
+  .md-search-result__more > summary > div:hover {
+    background-color: var(--md-default-fg-color--lightest);
+  }
+
+  /* 细圆角滚动条 */
+  .md-search__scrollwrap::-webkit-scrollbar {
+    width: 6px;
+  }
+  .md-search__scrollwrap::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+  .md-search__scrollwrap::-webkit-scrollbar-thumb {
+    background-color: var(--md-default-fg-color--lighter);
+    border-radius: 999px;
+  }
+}

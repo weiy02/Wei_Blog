@@ -37,6 +37,8 @@ nav:
     - 双端队列: CPP/C++.md
     - vector: CPP/vector.md
     - map: CPP/map.md
+    - set: CPP/set.md
+    - bitset: CPP/bitset.md
 # 主题
 theme:
   name: material

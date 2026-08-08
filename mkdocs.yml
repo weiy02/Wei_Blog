@@ -11,9 +11,9 @@ copyright: 'Copyright &copy; 2026'
 
 # 导航
 nav:
-  - 首页: index.md
-  - 关于: about.md
-  # - 样式演示: demo.md
+  - 首页:
+    - 简介: index.md
+    - 关于: about.md
   - 杂项:
     - 稀疏矩阵: 杂项/稀疏矩阵.md
   - 算法竞赛:
@@ -21,6 +21,7 @@ nav:
       - Beginner Contest:
         - abc458: ShuaTi/AtCoder/AtCoder_Beginner_Contest/abc458.md
         - abc461: ShuaTi/AtCoder/AtCoder_Beginner_Contest/abc461.md
+        - abc470: ShuaTi/AtCoder/AtCoder_Beginner_Contest/abc470.md
     - LeetCode:
       - 第11题: ShuaTi/LeetCode/11.md
       - 三数之和: ShuaTi/LeetCode/15.md
@@ -30,7 +31,7 @@ nav:
   - 课内课程:
     - Java: Classes/Java.md
     - 数据库: Classes/数据库.md
-  - C++基础:
+  - C++:
     - 字符串处理: CPP/String.md
     - 栈: CPP/Stack.md
     - 堆与优先队列: CPP/堆与优先队列.md
@@ -39,6 +40,8 @@ nav:
     - map: CPP/map.md
     - set: CPP/set.md
     - bitset: CPP/bitset.md
+  - Python:
+    - 基础入门: Python/入门.md
 # 主题
 theme:
   name: material
@@ -68,6 +71,7 @@ theme:
 plugins:
   - search:
       lang: zh
+  - tags:
 # 扩展
 markdown_extensions:
   - attr_list

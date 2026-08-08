@@ -1,6 +1,5 @@
 ---
 title: vector
-tags: [C++]
 ---
 
 ## STL 库

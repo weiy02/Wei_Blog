@@ -71,7 +71,6 @@ theme:
 plugins:
   - search:
       lang: zh
-  - tags:
 # 扩展
 markdown_extensions:
   - attr_list

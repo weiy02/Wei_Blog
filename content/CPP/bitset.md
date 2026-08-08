@@ -1,4 +1,3 @@
 ---
 title: bitset
-tags: [C++]
 ---

@@ -21,6 +21,7 @@ nav:
       - Beginner Contest:
         - abc458: ShuaTi/AtCoder/AtCoder_Beginner_Contest/abc458.md
         - abc461: ShuaTi/AtCoder/AtCoder_Beginner_Contest/abc461.md
+        - abc469: ShuaTi/AtCoder/AtCoder_Beginner_Contest/abc469.md
         - abc470: ShuaTi/AtCoder/AtCoder_Beginner_Contest/abc470.md
     - LeetCode:
       - 第11题: ShuaTi/LeetCode/11.md
@@ -32,6 +33,7 @@ nav:
     - Java: Classes/Java.md
     - 数据库: Classes/数据库.md
   - C++:
+    - 杂项积累: CPP/杂项积累.md
     - 字符串处理: CPP/String.md
     - 栈: CPP/Stack.md
     - 堆与优先队列: CPP/堆与优先队列.md

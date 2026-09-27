@@ -16,6 +16,7 @@ nav:
     - 关于: about.md
   - 杂项:
     - 稀疏矩阵: 杂项/稀疏矩阵.md
+    - 幻灯片演示: 杂项/幻灯片演示.md
   - 算法竞赛:
     - AtCoder:
       - Beginner Contest:
@@ -23,6 +24,7 @@ nav:
         - abc461: ShuaTi/AtCoder/AtCoder_Beginner_Contest/abc461.md
         - abc469: ShuaTi/AtCoder/AtCoder_Beginner_Contest/abc469.md
         - abc470: ShuaTi/AtCoder/AtCoder_Beginner_Contest/abc470.md
+        - abc471: ShuaTi/AtCoder/AtCoder_Beginner_Contest/abc471.md
     - LeetCode:
       - 第11题: ShuaTi/LeetCode/11.md
       - 三数之和: ShuaTi/LeetCode/15.md
@@ -113,6 +115,8 @@ extra_css:
   - _static/css/tables.css
   - _static/css/images.css
   - _static/css/404.css
+  - _static/css/slides.css
 extra_javascript:
   - _static/js/mathjax-config.js
+  - _static/js/slides.js
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js

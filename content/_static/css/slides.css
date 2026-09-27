@@ -1,0 +1,651 @@
+/* ============================================================
+   幻灯片演示模式 — reveal.js
+   文章标题旁注入「演示」按钮，点击后进系统全屏（整个屏幕）并切到 ?slides=1
+   的幻灯片视图；文章里的 --- 分隔线就是分页符。退出按 Esc，没有常驻的退出按钮。
+
+   reveal 本体（content/_static/reveal/）只在进入演示模式时按需加载，
+   平时阅读不产生任何额外请求；退出后 deck 直接从 DOM 移除，
+   reveal.css 里的规则基本都挂在 .reveal / .reveal-viewport 上，随它一起失效。
+
+   文件分两段：
+     A. 阅读态（按钮、遮罩）—— 常驻，但都很轻；
+     B. deck 内部 —— 全部以 #mdx-deck 开头，不在演示模式时一条都不生效。
+   ============================================================ */
+
+/* ============================================================
+   A. 阅读态
+   ============================================================ */
+
+/* ---------- 「演示」按钮 ---------- */
+/* 同时带上 Material 的 md-button 类：generate-pdfs.py 的打印样式会隐藏
+   .md-content .md-button，导出 PDF 时这个按钮自动不出现 */
+.mdx-slides-btn {
+  float: right;
+  margin: 0.2rem 0 0.8rem 1rem;
+  padding: 0.35em 1.1em;
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+
+/* ---------- 加载遮罩 ---------- */
+/* deck 资源是按需加载的，准备好之前先盖一层 dracula 底色，避免闪白。
+   #191919 / #bd93f9 是 dracula 的 --r-background-color / --r-link-color，
+   此刻 reveal.css 还没加载进来，引不到变量，所以写死一份 */
+.mdx-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #191919;
+  color: #bd93f9;
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+}
+
+/* ---------- 演示模式 ---------- */
+/* 不动 Material 的 DOM（退出时无需还原），只把 deck 固定到视口最上层。
+   z-index 100 比 Material 里最高的 10（.md-top 返回顶部）还高 */
+html.mdx-presenting #mdx-deck {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  /* deck 必须是不透明的：Material 的页面内容还在它下面，
+     透明的话文章正文、页眉、侧栏都会透上来 */
+  background-color: var(--r-background-color);
+  /* reveal 的初始化是异步的（plugins.load().then(start)），没走完时所有
+     幻灯片还都是普通块级元素、会堆成一团。就绪之前先别露出来，
+     这段时间用户看到的是上面那层遮罩 */
+  visibility: hidden;
+}
+
+html.mdx-presenting #mdx-deck.mdx-deck-ready {
+  visibility: visible;
+}
+
+/* ---------- 打印 ---------- */
+/* 只藏按钮和遮罩。刻意不动 #mdx-deck：演示时按 Cmd+P，reveal.css 里自带的
+   打印规则会把每张幻灯片打成一页，直接就能导出讲义 */
+@media print {
+  .mdx-slides-btn,
+  .mdx-loading {
+    display: none !important;
+  }
+}
+
+/* ============================================================
+   B. deck 内部：幻灯片自己的排版
+
+   这里刻意【不复用】文章的 .md-typeset 版式。幻灯片有自己的一套尺度
+   （画布 1200×750、正文 34px、行高 1.45、标题左对齐、代码小一档），
+   文章的阅读尺度（0.82rem / 1.85）是为长文阅读调的，塞进画布只会打架：
+   标题层级会塌成一样大、定义列表会撑出大片空白、表格会顶出画布。
+
+   Material 在构建期把 Markdown 编译成带类名的结构（div.highlight、
+   div.admonition、div.tabbed-set…），下面按「幻灯片」的审美单独给它们
+   一份样式，而不是借 Material 的文章版式。换主题色只需要改这一段的变量。
+   ============================================================ */
+
+#mdx-deck {
+  /* 中文用站点自己的字体栈（霞鹜文楷），dracula 默认是系统无衬线。
+     想换成更「投影味」的无衬线，把这两行改成 system-ui 即可 */
+  --r-main-font: var(--md-text-font, system-ui, sans-serif);
+  --r-heading-font: var(--r-main-font);
+  --r-code-font: "Fira Code", "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+  /* dracula 默认 42px 是按拉丁字母调的，中文收一档 */
+  --r-main-font-size: 34px;
+  --r-heading-text-transform: none;
+
+  /* 幻灯片四周留白（画布坐标系里的 px，不是视口的 vh/vw）。
+     自动缩放会读这两个值来算可用面积，改它们不需要动 JS */
+  --mdx-pad-y: 34px;
+  --mdx-pad-x: 52px;
+
+  /* 代码块底色：比幻灯片底色 #191919 略亮一档，块和背景分得开 */
+  --mdx-code-bg: #21222c;
+  /* 行内代码、行号、强调色 */
+  --mdx-inline-code: #50fa7b;
+  --mdx-lineno: #6272a4;
+  --mdx-accent: #bd93f9;
+  --mdx-link: var(--r-link-color, #ff79c6);
+}
+
+/* 正文左对齐：dracula 默认居中，对讲稿式的短句好看，但这里是文章正文
+   （长段落、列表、代码），居中会参差不齐 */
+#mdx-deck .slides > section.mdx-slide {
+  text-align: left;
+}
+
+/* 每张幻灯片的内容都套在这一层里，缩放（zoom）作用在它身上。
+   加在 section 上会把 section 自己的 top 偏移一起缩放，
+   reveal 算好的垂直居中就偏了（实测偏 34px），所以单独包一层 */
+#mdx-deck .mdx-fit {
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--mdx-pad-y) var(--mdx-pad-x);
+}
+
+/* 测量态：reveal 会把 viewDistance 之外的 section 设成 display:none，
+   那些页量出来是 0，自动缩放就永远不生效。这里临时把每一页都摊开量一遍，
+   量完立刻撤掉这个类，用户看不到（详见 slides.js 的 fitSlides） */
+#mdx-deck.mdx-measuring .slides > section {
+  display: block !important;
+  visibility: hidden !important;
+}
+
+/* 内容自带的上下外边距不要顶到画布边缘 */
+#mdx-deck .mdx-fit > :first-child { margin-top: 0; }
+#mdx-deck .mdx-fit > :last-child { margin-bottom: 0; }
+
+/* ---------- 文本流 ---------- */
+
+#mdx-deck .mdx-slide p { margin: 0 0 0.7em; }
+#mdx-deck .mdx-slide strong { color: #ffb86c; }
+#mdx-deck .mdx-slide em { color: #f1fa8c; }
+#mdx-deck .mdx-slide mark {
+  background: #f1fa8c;
+  color: #191919;
+  padding: 0 0.15em;
+  border-radius: 0.15em;
+}
+#mdx-deck .mdx-slide a {
+  color: var(--mdx-link);
+  text-decoration: none;
+  border-bottom: 1px solid rgb(255 121 198 / 35%);
+}
+#mdx-deck .mdx-slide a:hover { color: var(--r-link-color-hover, #8be9fd); }
+#mdx-deck .mdx-slide hr {
+  border: 0;
+  border-top: 1px solid rgb(255 255 255 / 18%);
+  margin: 0.6em 0;
+}
+
+/* 标题层级。文章里的 ## 是「这一页的标题」，所以按幻灯片标题来排：
+   明显大于正文、带一道短强调线；# 和 ### 则是页内的小标题 */
+#mdx-deck .mdx-slide h1,
+#mdx-deck .mdx-slide h2,
+#mdx-deck .mdx-slide h3,
+#mdx-deck .mdx-slide h4,
+#mdx-deck .mdx-slide h5,
+#mdx-deck .mdx-slide h6 {
+  color: var(--r-heading-color, #bd93f9);
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 0.5em 0 0.4em;
+}
+#mdx-deck .mdx-slide h2 { font-size: 1.5em; margin-top: 0; }
+#mdx-deck .mdx-slide h2::after {
+  content: "";
+  display: block;
+  width: 2.2em;
+  height: 0.1em;
+  margin-top: 0.22em;
+  border-radius: 0.1em;
+  background: var(--mdx-accent);
+  opacity: 0.55;
+}
+#mdx-deck .mdx-slide h1 { font-size: 1.25em; }
+#mdx-deck .mdx-slide h3 { font-size: 1.05em; }
+#mdx-deck .mdx-slide h4 { font-size: 1em; }
+#mdx-deck .mdx-slide h5,
+#mdx-deck .mdx-slide h6 { font-size: 0.95em; }
+
+/* 列表：幻灯片上的列表是「要点」，行距比文章紧、点之间留一点呼吸 */
+#mdx-deck .mdx-slide ul,
+#mdx-deck .mdx-slide ol {
+  margin: 0 0 0.7em;
+  padding-left: 1.4em;
+}
+#mdx-deck .mdx-slide li { margin: 0.18em 0; }
+#mdx-deck .mdx-slide li > ul,
+#mdx-deck .mdx-slide li > ol { margin: 0.18em 0; }
+#mdx-deck .mdx-slide li::marker { color: var(--mdx-link); }
+#mdx-deck .mdx-slide ul ul { list-style: circle; }
+
+/* 引用 */
+#mdx-deck .mdx-slide blockquote {
+  margin: 0.5em 0;
+  padding: 0.5em 0.9em;
+  border-left: 4px solid #6272a4;
+  border-radius: 0 0.25em 0.25em 0;
+  background: rgb(68 71 90 / 35%);
+  color: #f1fa8c;
+}
+#mdx-deck .mdx-slide blockquote blockquote {
+  margin: 0.5em 0;
+  background: rgb(68 71 90 / 55%);
+}
+#mdx-deck .mdx-slide blockquote > :last-child { margin-bottom: 0; }
+
+/* 定义列表：Material 的文章版式在这里会撑出大片空白（dt 和 dd 各带大边距），
+   幻灯片上按「术语 — 释义」贴紧排 */
+#mdx-deck .mdx-slide dl { margin: 0.5em 0; }
+#mdx-deck .mdx-slide dt {
+  color: #8be9fd;
+  font-weight: 700;
+  margin-top: 0.5em;
+}
+#mdx-deck .mdx-slide dt:first-child { margin-top: 0; }
+#mdx-deck .mdx-slide dd { margin: 0.1em 0 0 1.2em; }
+
+/* 键盘按键 */
+#mdx-deck .mdx-slide kbd {
+  font-family: var(--r-code-font);
+  font-size: 0.8em;
+  color: #f8f8f2;
+  background: #44475a;
+  border-radius: 0.25em;
+  padding: 0.1em 0.45em;
+  box-shadow: 0 2px 0 rgb(0 0 0 / 35%);
+}
+
+/* 表格。文章里 Material 的表格是 display:block + 大内边距，
+   幻灯片上用紧凑的真表格；字号小一档，给列宽留余量 */
+#mdx-deck .mdx-slide table {
+  border-collapse: collapse;
+  margin: 0.5em 0;
+  font-size: 0.62em;
+  line-height: 1.45;
+}
+#mdx-deck .mdx-slide th,
+#mdx-deck .mdx-slide td {
+  padding: 0.4em 0.8em;
+  border: 1px solid rgb(255 255 255 / 12%);
+  text-align: left;
+  vertical-align: top;
+}
+#mdx-deck .mdx-slide thead th {
+  background: rgb(189 147 249 / 18%);
+  color: #f8f8f2;
+  font-weight: 700;
+}
+#mdx-deck .mdx-slide tbody tr:nth-child(even) { background: rgb(255 255 255 / 3%); }
+/* 表格里的对齐属性要尊重（Markdown 的 :---: 会写成 style/align） */
+#mdx-deck .mdx-slide th[align="center"],
+#mdx-deck .mdx-slide td[align="center"] { text-align: center; }
+#mdx-deck .mdx-slide th[align="right"],
+#mdx-deck .mdx-slide td[align="right"] { text-align: right; }
+
+/* ---------- 代码 ---------- */
+/* Material 的代码块字号是分好几层用相对单位叠出来的：表格一层、行号列一层、
+   pre 一层、code 一层。在文章里每层都恰到好处，进了幻灯片会被连着乘下来。
+   这里把整棵代码子树铺平成同一个字号 + 同一个行高（行号和代码必须等大等高，
+   否则会错位），只在最外层 .highlight 上定一个基准 */
+#mdx-deck .mdx-slide .highlight {
+  font-size: 0.5em;
+  line-height: 1.5;
+  margin: 0.6em 0;
+  background: var(--mdx-code-bg);
+  border-radius: 0.2em;
+}
+#mdx-deck .mdx-slide .highlight,
+#mdx-deck .mdx-slide .highlight table,
+#mdx-deck .mdx-slide .highlight tbody,
+#mdx-deck .mdx-slide .highlight tr,
+#mdx-deck .mdx-slide .highlight td,
+#mdx-deck .mdx-slide .highlight td > div,
+#mdx-deck .mdx-slide .highlight .linenodiv,
+#mdx-deck .mdx-slide .highlight pre,
+#mdx-deck .mdx-slide .highlight code {
+  font-size: inherit;
+  line-height: 1.5;
+}
+
+/* 代码块里那张用于分栏的表格不能被上面的表格样式影响 */
+#mdx-deck .mdx-slide .highlight table {
+  border: 0;
+  margin: 0;
+  background: none;
+}
+#mdx-deck .mdx-slide .highlight td {
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+/* 代码块不换行、也不设高度上限。
+   dracula 给 .reveal pre code 定了 max-height: 400px + overflow: auto，正文里
+   是「太长就内部滚动」；但幻灯片里没人能滚一个内嵌容器，超过 400px 的代码就
+   永远看不到了。放开高度，让整页缩放来兜底 —— 缩小的整页是可读的，
+   滚不到的代码不是 */
+#mdx-deck .mdx-slide .highlight pre {
+  margin: 0;
+  padding: 0.6em 0.9em;
+  max-height: none;
+  overflow: visible;
+  white-space: pre;
+  background: none;
+}
+#mdx-deck .mdx-slide .highlight code {
+  padding: 0;
+  background: none;
+  white-space: pre;
+}
+
+/* 行号列 */
+#mdx-deck .mdx-slide .highlight .linenos {
+  border-right: 1px solid rgb(255 255 255 / 8%);
+}
+#mdx-deck .mdx-slide .highlight .linenos pre {
+  padding-right: 0.7em;
+  padding-left: 0.9em;
+  color: var(--mdx-lineno);
+  text-align: right;
+  user-select: none;
+}
+#mdx-deck .mdx-slide .highlight td.code pre { padding-left: 0; }
+
+/* 代码块的文件名（```c title="hello.c"） */
+#mdx-deck .mdx-slide .highlight .filename {
+  display: block;
+  padding: 0.35em 0.9em;
+  background: rgb(255 255 255 / 6%);
+  color: #8be9fd;
+  font-family: var(--r-code-font);
+}
+
+/* 行高亮（hl_lines） */
+#mdx-deck .mdx-slide .highlight .hll {
+  display: inline-block;
+  width: 100%;
+  background: rgb(255 184 108 / 16%);
+}
+
+/* 单词高亮（pymdownx 的 ==高亮== 在代码里是 .hll 之外的 class="hll"…） */
+#mdx-deck .mdx-slide :not(pre) > code {
+  font-family: var(--r-code-font);
+  font-size: 0.85em;
+  padding: 0.08em 0.35em;
+  border-radius: 0.2em;
+  background: rgb(255 255 255 / 8%);
+  color: var(--mdx-inline-code);
+}
+
+/* ---------- 语法着色（dracula 配色） ---------- */
+/* Material 的 pygments 配色挂在 .md-typeset 下，这里不借它的版式，
+   所以按 token 类名自己配一套；类名是 pygments 的稳定输出 */
+#mdx-deck .mdx-slide .highlight .c,
+#mdx-deck .mdx-slide .highlight .c1,
+#mdx-deck .mdx-slide .highlight .cm,
+#mdx-deck .mdx-slide .highlight .cs,
+#mdx-deck .mdx-slide .highlight .ch,
+#mdx-deck .mdx-slide .highlight .cp { color: #6272a4; font-style: italic; }
+#mdx-deck .mdx-slide .highlight .k,
+#mdx-deck .mdx-slide .highlight .kc,
+#mdx-deck .mdx-slide .highlight .kd,
+#mdx-deck .mdx-slide .highlight .kn,
+#mdx-deck .mdx-slide .highlight .kp,
+#mdx-deck .mdx-slide .highlight .kr,
+#mdx-deck .mdx-slide .highlight .kt,
+#mdx-deck .mdx-slide .highlight .ow { color: #ff79c6; }
+#mdx-deck .mdx-slide .highlight .s,
+#mdx-deck .mdx-slide .highlight .s1,
+#mdx-deck .mdx-slide .highlight .s2,
+#mdx-deck .mdx-slide .highlight .sa,
+#mdx-deck .mdx-slide .highlight .sb,
+#mdx-deck .mdx-slide .highlight .sc,
+#mdx-deck .mdx-slide .highlight .sd,
+#mdx-deck .mdx-slide .highlight .se,
+#mdx-deck .mdx-slide .highlight .si,
+#mdx-deck .mdx-slide .highlight .sr,
+#mdx-deck .mdx-slide .highlight .ss { color: #f1fa8c; }
+#mdx-deck .mdx-slide .highlight .m,
+#mdx-deck .mdx-slide .highlight .mb,
+#mdx-deck .mdx-slide .highlight .mf,
+#mdx-deck .mdx-slide .highlight .mh,
+#mdx-deck .mdx-slide .highlight .mi,
+#mdx-deck .mdx-slide .highlight .mo,
+#mdx-deck .mdx-slide .highlight .il { color: #bd93f9; }
+#mdx-deck .mdx-slide .highlight .nf,
+#mdx-deck .mdx-slide .highlight .fm,
+#mdx-deck .mdx-slide .highlight .na { color: #50fa7b; }
+#mdx-deck .mdx-slide .highlight .nb,
+#mdx-deck .mdx-slide .highlight .bp,
+#mdx-deck .mdx-slide .highlight .nc,
+#mdx-deck .mdx-slide .highlight .ne,
+#mdx-deck .mdx-slide .highlight .nn,
+#mdx-deck .mdx-slide .highlight .nv { color: #8be9fd; }
+#mdx-deck .mdx-slide .highlight .nd,
+#mdx-deck .mdx-slide .highlight .ni { color: #f8f8f2; }
+#mdx-deck .mdx-slide .highlight .err { color: #ff5555; }
+#mdx-deck .mdx-slide .highlight .gd { color: #ff5555; }
+#mdx-deck .mdx-slide .highlight .gi { color: #50fa7b; }
+
+/* ---------- 提示框（admonition） ---------- */
+/* Material 的提示框靠 .md-typeset 下的图标字体和一套背景变量撑起来，
+   这里按「左侧色条 + 同色标题 + 淡色底」重新画一份，投影上更清楚 */
+#mdx-deck .mdx-slide .admonition {
+  --mdx-adm: #8be9fd;
+  margin: 0.6em 0;
+  padding: 0.55em 0.9em;
+  border-left: 4px solid var(--mdx-adm);
+  border-radius: 0 0.25em 0.25em 0;
+  background: rgb(255 255 255 / 5%);
+}
+#mdx-deck .mdx-slide .admonition > :last-child { margin-bottom: 0; }
+#mdx-deck .mdx-slide .admonition-title {
+  color: var(--mdx-adm);
+  font-weight: 700;
+  margin: 0 0 0.25em;
+}
+#mdx-deck .mdx-slide .admonition.note,
+#mdx-deck .mdx-slide .admonition.info,
+#mdx-deck .mdx-slide .admonition.abstract,
+#mdx-deck .mdx-slide .admonition.todo,
+#mdx-deck .mdx-slide .admonition.example { --mdx-adm: #8be9fd; }
+#mdx-deck .mdx-slide .admonition.tip,
+#mdx-deck .mdx-slide .admonition.hint,
+#mdx-deck .mdx-slide .admonition.important,
+#mdx-deck .mdx-slide .admonition.success,
+#mdx-deck .mdx-slide .admonition.check { --mdx-adm: #50fa7b; }
+#mdx-deck .mdx-slide .admonition.question,
+#mdx-deck .mdx-slide .admonition.help,
+#mdx-deck .mdx-slide .admonition.faq { --mdx-adm: #bd93f9; }
+#mdx-deck .mdx-slide .admonition.warning,
+#mdx-deck .mdx-slide .admonition.caution,
+#mdx-deck .mdx-slide .admonition.attention { --mdx-adm: #f1fa8c; }
+#mdx-deck .mdx-slide .admonition.danger,
+#mdx-deck .mdx-slide .admonition.error,
+#mdx-deck .mdx-slide .admonition.failure,
+#mdx-deck .mdx-slide .admonition.fail,
+#mdx-deck .mdx-slide .admonition.bug { --mdx-adm: #ff5555; }
+#mdx-deck .mdx-slide .admonition.quote,
+#mdx-deck .mdx-slide .admonition.cite { --mdx-adm: #6272a4; }
+
+/* 可折叠提示框（??? note）：幻灯片上点一下能展开，展开状态由浏览器管 */
+#mdx-deck .mdx-slide details.admonition > summary {
+  cursor: pointer;
+  list-style: none;
+}
+#mdx-deck .mdx-slide details.admonition > summary::-webkit-details-marker { display: none; }
+#mdx-deck .mdx-slide details.admonition > summary::after {
+  content: "▸";
+  float: right;
+  color: var(--mdx-adm);
+  transition: transform 0.2s;
+}
+#mdx-deck .mdx-slide details[open].admonition > summary::after {
+  content: "▾";
+}
+
+/* ---------- 选项卡（tabbed） ---------- */
+/* Material 靠 :checked ~ 兄弟选择器切页，不用 JS；这里复刻同一套结构，
+   只是把标签做成幻灯片上的胶囊按钮 */
+#mdx-deck .mdx-slide .tabbed-set {
+  display: flex;
+  flex-flow: column wrap;
+  position: relative;
+  margin: 0.6em 0;
+}
+#mdx-deck .mdx-slide .tabbed-set > input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+}
+#mdx-deck .mdx-slide .tabbed-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4em;
+  margin-bottom: 0.4em;
+}
+#mdx-deck .mdx-slide .tabbed-labels > label {
+  cursor: pointer;
+  font-size: 0.72em;
+  font-weight: 700;
+  padding: 0.25em 0.9em;
+  border-radius: 1em;
+  color: #f8f8f2;
+  background: rgb(255 255 255 / 8%);
+}
+#mdx-deck .mdx-slide .tabbed-block { display: none; }
+
+#mdx-deck .mdx-slide .tabbed-set > input:nth-child(1):checked ~ .tabbed-labels > :nth-child(1),
+#mdx-deck .mdx-slide .tabbed-set > input:nth-child(2):checked ~ .tabbed-labels > :nth-child(2),
+#mdx-deck .mdx-slide .tabbed-set > input:nth-child(3):checked ~ .tabbed-labels > :nth-child(3),
+#mdx-deck .mdx-slide .tabbed-set > input:nth-child(4):checked ~ .tabbed-labels > :nth-child(4),
+#mdx-deck .mdx-slide .tabbed-set > input:nth-child(5):checked ~ .tabbed-labels > :nth-child(5),
+#mdx-deck .mdx-slide .tabbed-set > input:nth-child(6):checked ~ .tabbed-labels > :nth-child(6),
+#mdx-deck .mdx-slide .tabbed-set > input:nth-child(7):checked ~ .tabbed-labels > :nth-child(7),
+#mdx-deck .mdx-slide .tabbed-set > input:nth-child(8):checked ~ .tabbed-labels > :nth-child(8),
+#mdx-deck .mdx-slide .tabbed-set > input:nth-child(9):checked ~ .tabbed-labels > :nth-child(9),
+#mdx-deck .mdx-slide .tabbed-set > input:nth-child(10):checked ~ .tabbed-labels > :nth-child(10) {
+  background: var(--mdx-accent);
+  color: #191919;
+}
+
+#mdx-deck .mdx-slide .tabbed-set > input:nth-child(1):checked ~ .tabbed-content > :nth-child(1),
+#mdx-deck .mdx-slide .tabbed-set > input:nth-child(2):checked ~ .tabbed-content > :nth-child(2),
+#mdx-deck .mdx-slide .tabbed-set > input:nth-child(3):checked ~ .tabbed-content > :nth-child(3),
+#mdx-deck .mdx-slide .tabbed-set > input:nth-child(4):checked ~ .tabbed-content > :nth-child(4),
+#mdx-deck .mdx-slide .tabbed-set > input:nth-child(5):checked ~ .tabbed-content > :nth-child(5),
+#mdx-deck .mdx-slide .tabbed-set > input:nth-child(6):checked ~ .tabbed-content > :nth-child(6),
+#mdx-deck .mdx-slide .tabbed-set > input:nth-child(7):checked ~ .tabbed-content > :nth-child(7),
+#mdx-deck .mdx-slide .tabbed-set > input:nth-child(8):checked ~ .tabbed-content > :nth-child(8),
+#mdx-deck .mdx-slide .tabbed-set > input:nth-child(9):checked ~ .tabbed-content > :nth-child(9),
+#mdx-deck .mdx-slide .tabbed-set > input:nth-child(10):checked ~ .tabbed-content > :nth-child(10) {
+  display: block;
+}
+
+/* ---------- 任务列表 ---------- */
+#mdx-deck .mdx-slide .task-list { padding-left: 0; list-style: none; }
+#mdx-deck .mdx-slide .task-list-item {
+  list-style: none;
+  margin: 0.22em 0;
+  padding-left: 1.5em;
+}
+#mdx-deck .mdx-slide .task-list-control {
+  position: absolute;
+  margin-left: -1.5em;
+  width: 1.05em;
+  height: 1.05em;
+}
+#mdx-deck .mdx-slide .task-list-item input { display: none; }
+#mdx-deck .mdx-slide .task-list-indicator {
+  position: absolute;
+  inset: 0.25em 0 0;
+  height: 1.05em;
+  border: 2px solid var(--mdx-lineno);
+  border-radius: 0.2em;
+}
+#mdx-deck .mdx-slide input:checked + .task-list-indicator {
+  background: #50fa7b;
+  border-color: #50fa7b;
+}
+#mdx-deck .mdx-slide input:checked + .task-list-indicator::after {
+  content: "";
+  position: absolute;
+  left: 0.28em;
+  top: 0.1em;
+  width: 0.22em;
+  height: 0.45em;
+  border: solid #191919;
+  border-width: 0 0.17em 0.17em 0;
+  transform: rotate(45deg);
+}
+
+/* ---------- 注脚 ---------- */
+#mdx-deck .mdx-slide .footnote {
+  margin-top: 1em;
+  padding-top: 0.5em;
+  border-top: 1px solid rgb(255 255 255 / 12%);
+  font-size: 0.68em;
+  color: #bfbfbf;
+}
+#mdx-deck .mdx-slide .footnote-ref {
+  font-size: 0.7em;
+  vertical-align: super;
+  color: var(--mdx-link);
+}
+#mdx-deck .mdx-slide .footnote-backref {
+  margin-left: 0.3em;
+  border-bottom: 0;
+}
+
+/* ---------- 图片 / 公式 / 进度条 ---------- */
+/* 注意这里的尺寸都用 px（画布坐标系）。deck 是靠 transform 缩放到视口的，
+   vh/vw 量的是真实视口，进画布后会算错 */
+#mdx-deck .mdx-slide img {
+  max-width: 100%;
+  max-height: 360px;
+  border-radius: 0.2em;
+}
+#mdx-deck .mdx-slide img.twemoji {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  max-height: none;
+  margin: 0;
+  vertical-align: -0.15em;
+}
+#mdx-deck .mdx-slide figure { margin: 0.5em 0; }
+#mdx-deck .mdx-slide figure figcaption { font-size: 0.8em; color: #bfbfbf; }
+
+#mdx-deck .mdx-slide mjx-container { font-size: 1em; }
+#mdx-deck .mdx-slide mjx-container[display="true"] { margin: 0.4em 0; }
+
+#mdx-deck .mdx-slide .progress {
+  display: block;
+  width: 100%;
+  max-width: 22em;
+  height: 0.35em;
+  margin: 0.2em 0;
+  border-radius: 1em;
+  background: rgb(255 255 255 / 12%);
+  overflow: hidden;
+}
+#mdx-deck .mdx-slide .progress-bar {
+  display: block;
+  height: 100%;
+  border-radius: 1em;
+  background: var(--mdx-link);
+}
+#mdx-deck .mdx-slide .progress-label { display: none; }
+
+/* ---------- 杂项 ---------- */
+/* 材料里可能出现的按钮型链接 */
+#mdx-deck .mdx-slide .md-button {
+  display: inline-block;
+  padding: 0.2em 0.9em;
+  border: 0;
+  border-radius: 1em;
+  background: var(--mdx-link);
+  color: #191919;
+  font-weight: 700;
+}
+
+/* 标题旁的永久链接锚点是阅读时的便利，投影时只是噪声。
+   用 CSS 藏而不是从 DOM 里删：节点是直接搬进 deck 的，
+   动 DOM 就等于改坏了退出后要还回去的文章 */
+#mdx-deck .slides .headerlink { display: none; }
+
+/* 代码块的「复制」按钮同理：投影时不会有人去点它，只会盖住代码 */
+#mdx-deck .slides .md-clipboard { display: none; }
+
+/* ---------- reveal 自带的排版辅助类 ---------- */
+/* 这些是 reveal 官方文档里给作者用的（配 <!-- .element: class="..." -->），
+   reveal.css 只给了结构，配色和间距在这里补 */
+#mdx-deck .mdx-slide .r-stack > * { margin: 0; }
+#mdx-deck .mdx-slide .r-fit-text { white-space: normal; }
+#mdx-deck .mdx-slide pre.r-stretch { background: var(--mdx-code-bg); }
